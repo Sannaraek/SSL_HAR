@@ -147,7 +147,6 @@ def MAE_ISPL_train(hparams,frame_length,HP_0,HP_1,HP_2,initWeightDir_pretrain,in
 
     if(not os.path.exists(initWeightDir_pretrain)):
         print("Initialized model weights not found, generating one")
-        patch_encoder.save_weights(initWeightDir_pretrain)
         mae_encoder.save_weights(initWeightDir_pretrain)
     else:
         mae_encoder.load_weights(initWeightDir_pretrain)
