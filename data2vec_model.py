@@ -217,33 +217,7 @@ class PositionalEncoder(layers.Layer):
         patch_embeddings = (patches + pos_embeddings)  # (B, num_patches, projection_dim)
         return patch_embeddings
     
-class MaskEncoder(layers.Layer):
-    def __init__(self,embedding_size,mask_proportion, **kwargs):
-        super().__init__(**kwargs)
-        self.mask_proportion = mask_proportion
-        self.mask_token = tf.Variable(
-            tf.random.normal([1,embedding_size]), trainable=True
-        )
-    def build(self, input_shape):
-        (_, self.num_patches, self.patch_area) = input_shape
-        self.num_mask = int(np.ceil(self.mask_proportion * self.num_patches))
-        print("Number of mask")
-        print(self.num_mask)
-    def call(self, patches, training = None):
-        batch_size = tf.shape(patches)[0]
-        mask_indices, unmask_indices = self.get_random_indices(batch_size)
-        mask_tokens = tf.repeat(self.mask_token, repeats=self.num_mask, axis=0)
-        mask_tokens = tf.repeat(mask_tokens[tf.newaxis, ...], repeats=batch_size, axis=0)
-        unmaskedEmbeds = tf.gather(patches, unmask_indices, axis=1, batch_dims=1)  
-        encoderInput = tf.concat((unmaskedEmbeds,mask_tokens),axis = 1)
-        return encoderInput,mask_indices
-    def get_random_indices(self, batch_size):
-        rand_indices = tf.argsort(
-            tf.random.uniform(shape=(batch_size, self.num_patches)), axis=-1
-        )
-        mask_indices = rand_indices[:, : self.num_mask]
-        unmask_indices = rand_indices[:, self.num_mask :]
-        return mask_indices, unmask_indices
+
 
 
 def HART_student_encoder_LM(projection_dim = 192,num_heads = 3,filterAttentionHead = 4, convKernels = [3, 7, 15, 31, 31, 31],dropout_rate = 0.1):
@@ -642,6 +616,7 @@ class MaskEncoder(layers.Layer):
         mask_indices = rand_indices[:, : self.num_mask]
         unmask_indices = rand_indices[:, self.num_mask :]
         return mask_indices, unmask_indices
+
 
 class SensorWiseMaskEncoder(layers.Layer):
     def __init__(self,embedding_size,mask_proportion,frame_length,channels = 6, downstream = False, **kwargs):

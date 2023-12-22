@@ -378,36 +378,7 @@ class PatchLayer(layers.Layer):
     
     
 
-@tf.function
-def NT_Xent_loss(hidden_features_transform_1, hidden_features_transform_2, normalize=True, temperature=1.0, weights=1.0):
-    LARGE_NUM = 1e9
-    entropy_function = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-    batch_size = tf.shape(hidden_features_transform_1)[0]
-    
-    h1 = hidden_features_transform_1
-    h2 = hidden_features_transform_2
-    if normalize:
-        h1 = tf.math.l2_normalize(h1, axis=1)
-        h2 = tf.math.l2_normalize(h2, axis=1)
 
-    labels = tf.range(batch_size)
-    masks = tf.one_hot(tf.range(batch_size), batch_size)
-    
-    logits_aa = tf.matmul(h1, h1, transpose_b=True) / temperature
-    # Suppresses the logit of the repeated sample, which is in the diagonal of logit_aa
-    # i.e. the product of h1[x] . h1[x]
-    logits_aa = logits_aa - masks * LARGE_NUM
-    logits_bb = tf.matmul(h2, h2, transpose_b=True) / temperature
-    logits_bb = logits_bb - masks * LARGE_NUM
-    logits_ab = tf.matmul(h1, h2, transpose_b=True) / temperature
-    logits_ba = tf.matmul(h2, h1, transpose_b=True) / temperature
-
-    
-    loss_a = entropy_function(labels, tf.concat([logits_ab, logits_aa], 1), sample_weight=weights)
-    loss_b = entropy_function(labels, tf.concat([logits_ba, logits_bb], 1), sample_weight=weights)
-    loss = loss_a + loss_b
-
-    return loss,h1,h2
 
 class SimCLR(tf.keras.Model):
     def __init__(
@@ -435,6 +406,8 @@ class SimCLR(tf.keras.Model):
         transfromedInput2 = self.transformation_function(inputData)
         total_loss,loss_patch, loss_output = self.calculate_loss(transfromedInput1,transfromedInput2)
         return total_loss
+
+    @tf.function
     def calculate_loss(self, transfromedInput1,transfromedInput2, normalize=True, temperature=1.0, weights=1.0):
         embed1 = self.encoder(transfromedInput1)
         projection1 = self.projection_heads(embed1)
@@ -442,7 +415,7 @@ class SimCLR(tf.keras.Model):
         projection2 = self.projection_heads(embed2)
         loss = self.compiled_loss(projection1, projection2)
         return loss,projection1,projection2
-    
+    @tf.function
     def train_step(self, inputData):
         transfromedInput1 = self.transformation_function(inputData)
         transfromedInput2 = self.transformation_function(inputData)
@@ -554,6 +527,46 @@ def projection_head(enc_embedding_size,hidden_1=256, hidden_2=128, hidden_3=50):
     model = tf.keras.Model(inputs=inputs, outputs=outputs)
     return model
 
+def scaling_transform_vectorized(X, sigma=0.1):
+    """
+    Scaling by a random factor
+    """
+    scaling_factor = tf.random.normal(shape=(tf.shape(X)[0], 1, tf.shape(X)[2]), mean=1.0, stddev=sigma, dtype=tf.float32)
+    return X * scaling_factor
+
+def noise_transform_vectorized(X, sigma=0.05):
+    """
+    Adding random Gaussian noise with mean 0
+    """
+    noise = tf.random.normal(shape=tf.shape(X), mean=0, stddev=sigma, dtype=tf.float32)
+    return X + noise
+# def get_cubic_spline_interpolation(x_eval, x_data, y_data):
+#     """
+#     Get values for the cubic spline interpolation
+#     """
+#     cubic_spline = scipy.interpolate.CubicSpline(x_data, y_data)
+#     return cubic_spline(x_eval)
+
+# def time_warp_transform_improved(X, sigma=0.2, num_knots=4):
+#     """
+#     Stretching and warping the time-series
+#     """
+
+#     inputShape = tf.shape(X)
+#     time_stamps = np.arange(inputShape[1])
+#     knot_xs = np.arange(0, num_knots + 2, dtype=float) * (inputShape[1] - 1) / (num_knots + 1)
+#     spline_ys = np.random.normal(loc=1.0, scale=sigma, size=(inputShape[0] * inputShape[2], num_knots + 2))
+
+#     spline_values = np.array([get_cubic_spline_interpolation(time_stamps, knot_xs, spline_ys_individual) for spline_ys_individual in spline_ys])
+
+#     cumulative_sum = np.cumsum(spline_values, axis=1)
+#     distorted_time_stamps_all = cumulative_sum / cumulative_sum[:, -1][:, np.newaxis] * (inputShape[1] - 1)
+
+#     X_transformed = np.empty(shape=inputShape)
+#     for i, distorted_time_stamps in enumerate(distorted_time_stamps_all):
+#         X_transformed[i // inputShape[2], :, i % inputShape[2]] = np.interp(time_stamps, distorted_time_stamps, X[i // inputShape[2], :, i % inputShape[2]])
+#     return X_transformed
+
 
 def rotation_transform_vectorized(X):
     """
@@ -591,7 +604,7 @@ def axis_angle_to_rotation_matrix_3d_vectorized(axes, angles):
         [ zxC-ys,   yzC+xs,   z*zC+c ]])
     matrix_transposed = tf.transpose(m, perm=[2,0,1])
     return matrix_transposed
-
+    
 class NT_Xent_loss(tf.keras.losses.Loss):
     def __init__(self, temperature):
         super().__init__()
@@ -620,6 +633,7 @@ class NT_Xent_loss(tf.keras.losses.Loss):
         loss = loss_a + loss_b
         
         return loss
+
 def generate_composite_transform_function_simple(transform_funcs):
     """
     Create a composite transformation function by composing transformation functions
