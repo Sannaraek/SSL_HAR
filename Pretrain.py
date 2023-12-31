@@ -154,8 +154,8 @@ print("Number of segments : "+str(patch_count))
 # In[ ]:
 
 
+rootdir = './'
 if not is_interactive():
-    rootdir = './SSL_Project2/'
     args = add_fit_args(argparse.ArgumentParser(description='SSL Pretraining Pipeline'))
     experimentSetting = args.experimentSetting
     testingDataset = args.testingDataset
@@ -170,8 +170,6 @@ if not is_interactive():
     architecture = args.architecture
     method = args.method
     instance_number = args.instance_number
-else:
-    rootdir = './'
 
 
 # In[ ]:
