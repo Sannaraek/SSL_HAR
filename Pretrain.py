@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[3]:
+# In[ ]:
 
 
 import os
@@ -27,7 +27,7 @@ tf.random.set_seed(seed)
 np.random.seed(seed)
 
 
-# In[4]:
+# In[ ]:
 
 
 # Library scripts
@@ -38,7 +38,7 @@ import mae_model
 import simclr_model
 
 
-# In[44]:
+# In[ ]:
 
 
 experimentSetting = 'LODO'
@@ -79,27 +79,16 @@ instance_number = 99
 randomRuns = 5
 
 
-# In[45]:
+# In[ ]:
 
 
 datasets = ['HHAR','MobiAct','MotionSense','RealWorld_Waist','UCI','PAMAP']
 
 
-# In[46]:
+# In[ ]:
 
 
-# totalRuns = randomRuns * len(datasets)
-# print(totalRuns)
-
-
-# In[47]:
-
-
-datasetIndex = instance_number // (len(datasets) - 1)
-instance_number = instance_number%5
-testingDataset = datasets[datasetIndex]
-print("instance_number: " +str(instance_number))
-print("testingDataset: " +str(datasets[datasetIndex]))
+architectures = ['HART','ISPL']
 
 
 # In[ ]:
@@ -188,6 +177,19 @@ else:
 # In[ ]:
 
 
+# remove this before public release
+datasetIndex = (instance_number // (len(datasets) - 1)) % 6
+architectureIndex = instance_number // 30
+instance_number = instance_number%5
+testingDataset = datasets[datasetIndex]
+architecture = architectures[architectureIndex]
+print("instance_number: " +str(instance_number))
+print("testingDataset: " +str(datasets[datasetIndex]) + " architecture: " +str(architectures[architectureIndex]))
+
+
+# In[ ]:
+
+
 dataDir = rootdir+'Datasets/SSL_PipelineUnionV2/'+experimentSetting+'/'
 # projectName = str(architecture)+'_Data2Vec_LayerNorm_mask_'+str(masking_ratio)+'_frameLength_'+str(frame_length)+'_SSL_epochs_'+str(SSL_epochs)
 projectName = str(method) +"_"+str (architecture) + "_SSL_Epochs" + str(SSL_epochs)
@@ -201,7 +203,6 @@ dataSetting = testingDataset
 project_directory = rootdir+'results/'+projectName+'/'+str(instance_number)+'/'
 working_directory = project_directory+dataSetting+'/'
 pretrained_dir = working_directory + evaluationType + '/'
-
     
 initWeightDir_pretrain = project_directory+'ini_'+str(method)+'_'+str(architecture)+'_Pretraining_Weights.h5'
 val_checkpoint_pipeline_weights = working_directory+"best_val_"+str(method)+"_pretrain.h5"
