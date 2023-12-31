@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[3]:
 
 
 import os
@@ -27,7 +27,7 @@ tf.random.set_seed(seed)
 np.random.seed(seed)
 
 
-# In[ ]:
+# In[4]:
 
 
 # Library scripts
@@ -38,7 +38,7 @@ import mae_model
 import simclr_model
 
 
-# In[ ]:
+# In[44]:
 
 
 experimentSetting = 'LODO'
@@ -75,6 +75,31 @@ SSL_epochs = 200
 masking_ratio = 75e-2
 
 instance_number = 99
+
+randomRuns = 5
+
+
+# In[45]:
+
+
+datasets = ['HHAR','MobiAct','MotionSense','RealWorld_Waist','UCI','PAMAP']
+
+
+# In[46]:
+
+
+# totalRuns = randomRuns * len(datasets)
+# print(totalRuns)
+
+
+# In[47]:
+
+
+datasetIndex = instance_number // (len(datasets) - 1)
+instance_number = instance_number%5
+testingDataset = datasets[datasetIndex]
+print("instance_number: " +str(instance_number))
+print("testingDataset: " +str(datasets[datasetIndex]))
 
 
 # In[ ]:
