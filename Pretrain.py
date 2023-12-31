@@ -181,6 +181,9 @@ if not is_interactive():
 # In[ ]:
 
 
+# Sleep needed when launching jobs in parallel
+time.sleep((instance_number % 30) * 10 ) 
+
 # remove this before public release
 datasetIndex = (instance_number // (len(datasets) - 1)) % 6
 architectureIndex = instance_number // 30
@@ -189,13 +192,6 @@ testingDataset = datasets[datasetIndex]
 architecture = architectures[architectureIndex]
 print("instance_number: " +str(instance_number))
 print("testingDataset: " +str(datasets[datasetIndex]) + " architecture: " +str(architectures[architectureIndex]))
-
-
-# In[ ]:
-
-
-time.sleep(instance_number * 10 ) 
-# Sleep needed when launching jobs in parallel
 
 
 # In[ ]:
