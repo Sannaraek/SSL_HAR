@@ -52,8 +52,7 @@ def projectTSNEWithShape(fileName,filepath,ACTIVITY_LABEL,labels_argmax,tsne_pro
         s=90,
         alpha=1.0,
         rasterized=True,
-        markers = True
-    )
+        markers = True)
     legend = graph.legend_
     for j, label in enumerate(unique_labels):
         legend.get_texts()[j].set_text(ACTIVITY_LABEL[int(label)]) 

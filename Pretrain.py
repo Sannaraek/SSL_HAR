@@ -41,12 +41,6 @@ import simclr_model
 # In[ ]:
 
 
-
-
-
-# In[ ]:
-
-
 experimentSetting = 'LODO'
 # 'LOGO','LODO'
 testingDataset = 'MotionSense'
@@ -59,7 +53,7 @@ method = 'MAE'
 
 architecture = 'HART'
 
-finetune_epoch = 100
+finetune_epoch = 1
 
 finetune_batch_size = 64
 
@@ -76,7 +70,7 @@ input_shape = (128,6)
 
 frame_length = 16
 
-SSL_epochs = 200
+SSL_epochs = 1
 
 masking_ratio = 75e-2
 
@@ -181,8 +175,14 @@ if not is_interactive():
 # In[ ]:
 
 
+instance_number = 0
+
+
+# In[ ]:
+
+
 # Sleep needed when launching jobs in parallel
-time.sleep((instance_number % 30) * 10 ) 
+time.sleep((instance_number % 30) * 60 ) 
 
 # remove this before public release
 datasetIndex = (instance_number // (len(datasets) - 1)) % 6
@@ -571,6 +571,12 @@ def oneHotSizeAdjuster(oneHotLabels):
 
 valLabel = utils.oneHotSizeAdjuster(valLabel,output_shape)
 testLabel = utils.oneHotSizeAdjuster(testLabel,output_shape)
+
+
+# In[ ]:
+
+
+tf.config.run_functions_eagerly(True)
 
 
 # In[ ]:
