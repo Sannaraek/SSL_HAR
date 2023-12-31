@@ -53,7 +53,7 @@ method = 'MAE'
 
 architecture = 'HART'
 
-finetune_epoch = 1
+finetune_epoch = 100
 
 finetune_batch_size = 64
 
@@ -70,7 +70,7 @@ input_shape = (128,6)
 
 frame_length = 16
 
-SSL_epochs = 1
+SSL_epochs = 200
 
 masking_ratio = 75e-2
 
@@ -466,12 +466,6 @@ elif(method == 'SimCLR'):
 
 else:
     raise Exception("Unrecognized algorithm, Please select one of the following: SimCLR, Data2vec, MAE")
-
-
-# In[ ]:
-
-
-
 
 
 # In[ ]:
