@@ -41,6 +41,12 @@ import simclr_model
 # In[ ]:
 
 
+
+
+
+# In[ ]:
+
+
 experimentSetting = 'LODO'
 # 'LOGO','LODO'
 testingDataset = 'MotionSense'
@@ -183,6 +189,13 @@ testingDataset = datasets[datasetIndex]
 architecture = architectures[architectureIndex]
 print("instance_number: " +str(instance_number))
 print("testingDataset: " +str(datasets[datasetIndex]) + " architecture: " +str(architectures[architectureIndex]))
+
+
+# In[ ]:
+
+
+time.sleep(instance_number * 10 ) 
+# Sleep needed when launching jobs in parallel
 
 
 # In[ ]:
