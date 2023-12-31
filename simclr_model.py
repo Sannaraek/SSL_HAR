@@ -407,7 +407,6 @@ class SimCLR(tf.keras.Model):
         total_loss,loss_patch, loss_output = self.calculate_loss(transfromedInput1,transfromedInput2)
         return total_loss
 
-    @tf.function
     def calculate_loss(self, transfromedInput1,transfromedInput2, normalize=True, temperature=1.0, weights=1.0):
         embed1 = self.encoder(transfromedInput1)
         projection1 = self.projection_heads(embed1)
@@ -415,7 +414,7 @@ class SimCLR(tf.keras.Model):
         projection2 = self.projection_heads(embed2)
         loss = self.compiled_loss(projection1, projection2)
         return loss,projection1,projection2
-    @tf.function
+        
     def train_step(self, inputData):
         transfromedInput1 = self.transformation_function(inputData)
         transfromedInput2 = self.transformation_function(inputData)

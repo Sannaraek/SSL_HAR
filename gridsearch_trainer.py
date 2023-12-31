@@ -117,7 +117,6 @@ def SimCLR_HART_train(hparams,frame_length,HP_0,HP_1,HP_2,initWeightDir_pretrain
 def MAE_ISPL_train(hparams,frame_length,HP_0,HP_1,HP_2,initWeightDir_pretrain,instanceDir,SSL_LR,SSL_epochs,SSL_data,SSL_val_data,SSL_batch_size,input_shape,patch_count):
     pretrain_callbacks = []
 
-    decoderDepthLength = [[3, 7], [3, 7, 7, 15],[3, 7, 15, 31, 31, 31]]
     enc_embedding_size = 256
 
     patch_layer = mae_model.PatchLayer(frame_length,frame_length)
@@ -192,9 +191,6 @@ def MAE_HART_train(hparams,frame_length,HP_0,HP_1,HP_2,initWeightDir_pretrain,in
                                          num_heads = 3,
                                          filterAttentionHead = 4, 
                                          convKernels = decoderDepthLength[(hparams[HP_1] // 2)-1])
-
-    
-    tf.print((hparams[HP_1] // 2)-1)
 
     pretrain_pipeline = mae_model.MaskedAutoencoder(patch_layer,
                             patch_encoder,

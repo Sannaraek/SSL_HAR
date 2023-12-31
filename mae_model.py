@@ -730,7 +730,6 @@ class MaskedAutoencoder(tf.keras.Model):
         ])
         return downStreamModel
     
-    @tf.function
     def call(self,inputData):
         patches = self.patch_layer(inputData)
         patch_embeddings = self.patch_encoder(patches)
@@ -738,7 +737,6 @@ class MaskedAutoencoder(tf.keras.Model):
         embeddings_output = self.downstreamPooler(encoder_outputs)
         return embeddings_output
     
-    @tf.function
     def calculate_loss(self, inputData):
         patches = self.patch_layer(inputData)
 
@@ -770,7 +768,6 @@ class MaskedAutoencoder(tf.keras.Model):
 
         return total_loss, loss_patch, loss_output
         
-    @tf.function
     def train_step(self, inputData):
 #         print(inputData.shape[0])
         with tf.GradientTape() as tape:
@@ -793,7 +790,6 @@ class MaskedAutoencoder(tf.keras.Model):
         # Report progress.
         self.compiled_metrics.update_state(loss_patch, loss_output)
         return {m.name: m.result() for m in self.metrics}
-    @tf.function
     def test_step(self, images):
         total_loss, loss_patch, loss_output = self.calculate_loss(images[0])
 
