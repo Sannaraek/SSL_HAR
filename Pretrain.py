@@ -175,15 +175,8 @@ if not is_interactive():
 # In[ ]:
 
 
-instance_number = 0
-
-
-# In[ ]:
-
-
 # Sleep needed when launching jobs in parallel
-# time.sleep((instance_number % 30) * 60 ) 
-
+time.sleep((instance_number % 30) * 20 ) 
 # remove this before public release
 datasetIndex = (instance_number // (len(datasets) - 1)) % 6
 architectureIndex = instance_number // 30
