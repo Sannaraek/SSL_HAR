@@ -182,7 +182,7 @@ instance_number = 0
 
 
 # Sleep needed when launching jobs in parallel
-time.sleep((instance_number % 30) * 60 ) 
+# time.sleep((instance_number % 30) * 60 ) 
 
 # remove this before public release
 datasetIndex = (instance_number // (len(datasets) - 1)) % 6
@@ -565,12 +565,6 @@ def oneHotSizeAdjuster(oneHotLabels):
 
 valLabel = utils.oneHotSizeAdjuster(valLabel,output_shape)
 testLabel = utils.oneHotSizeAdjuster(testLabel,output_shape)
-
-
-# In[ ]:
-
-
-tf.config.run_functions_eagerly(True)
 
 
 # In[ ]:
