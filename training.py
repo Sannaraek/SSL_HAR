@@ -114,10 +114,6 @@ def downStreamPipeline(fineTuneData,fineTuneLabel,valData,valLabel,testData,test
     best_model_callback = tf.keras.callbacks.ModelCheckpoint(best_validation_weights_dir,
         monitor='val_accuracy', mode='max', save_best_only=True, save_weights_only=True, verbose=0
     )
-    stop_early = tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=15)
-    callbacksList = []
-    callbacksList.append(stop_early)
-    callbacksList.append(best_model_callback)
 
     classification_model.load_weights(trained_FT_weights)
     
@@ -136,7 +132,7 @@ def downStreamPipeline(fineTuneData,fineTuneLabel,valData,valLabel,testData,test
         batch_size=finetune_batch_size,
         shuffle=True,
         epochs=finetune_epoch,
-        callbacks= callbacksList,
+        callbacks= [best_model_callback],
         verbose=2,
         validation_data=(valData,valLabel)
     )
@@ -152,10 +148,6 @@ def downStreamPipeline(fineTuneData,fineTuneLabel,valData,valLabel,testData,test
         monitor='val_accuracy', mode='max', save_best_only=True, save_weights_only=True, verbose=0
     )
     
-    stop_early = tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=15)
-    callbacksList = []
-    callbacksList.append(stop_early)
-    callbacksList.append(best_model_callback)
 
 
     for model_layer in classification_model.layers[:FE_Layers]:
@@ -173,7 +165,7 @@ def downStreamPipeline(fineTuneData,fineTuneLabel,valData,valLabel,testData,test
         batch_size=finetune_batch_size,
         shuffle=True,
         epochs=finetune_epoch,
-        callbacks=[callbacksList],
+        callbacks=[best_model_callback],
         verbose=2,
         validation_data=(valData,valLabel)
     )
