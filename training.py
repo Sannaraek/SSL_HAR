@@ -118,6 +118,7 @@ def downStreamPipeline(fineTuneData,fineTuneLabel,valData,valLabel,testData,test
     callbacksList = []
     callbacksList.append(stop_early)
     callbacksList.append(best_model_callback)
+    stop_early.stopped_epoch
 
     classification_model.load_weights(trained_FT_weights)
     
@@ -143,6 +144,10 @@ def downStreamPipeline(fineTuneData,fineTuneLabel,valData,valLabel,testData,test
     classification_model.load_weights(best_validation_weights_dir)
     macro_f1_list.append(utils.getF1Macro(testLabel,classification_model.predict(testData, verbose = 0)))
 
+    plotCurveEpoch = finetune_epoch
+    if(stop_early.stopped_epoch != 0):
+        plotCurveEpoch = stop_early.stopped_epoch + 1
+    
     utils.plot_learningCurve(training_history,finetune_epoch,evaluation_dir,'Graph_Frozen_FE_')
 
     # Feature Extrator Unfrozen
@@ -181,6 +186,10 @@ def downStreamPipeline(fineTuneData,fineTuneLabel,valData,valLabel,testData,test
     macro_f1_list.append(utils.getF1Macro(testLabel,classification_model.predict(testData, verbose = 0)))
 
 
+    plotCurveEpoch = finetune_epoch
+    if(stop_early.stopped_epoch != 0):
+        plotCurveEpoch = stop_early.stopped_epoch + 1
+    
     utils.plot_learningCurve(training_history,finetune_epoch,evaluation_dir,'Graph_Unfrozen_FE_')
 
     with open(evaluation_dir +'Result_Report.csv','w') as f:
