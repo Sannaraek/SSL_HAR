@@ -148,7 +148,7 @@ def downStreamPipeline(fineTuneData,fineTuneLabel,valData,valLabel,testData,test
     if(stop_early.stopped_epoch != 0):
         plotCurveEpoch = stop_early.stopped_epoch + 1
     
-    utils.plot_learningCurve(training_history,finetune_epoch,evaluation_dir,'Graph_Frozen_FE_')
+    utils.plot_learningCurve(training_history,plotCurveEpoch,evaluation_dir,'Graph_Frozen_FE_')
 
     # Feature Extrator Unfrozen
 
@@ -190,7 +190,7 @@ def downStreamPipeline(fineTuneData,fineTuneLabel,valData,valLabel,testData,test
     if(stop_early.stopped_epoch != 0):
         plotCurveEpoch = stop_early.stopped_epoch + 1
     
-    utils.plot_learningCurve(training_history,finetune_epoch,evaluation_dir,'Graph_Unfrozen_FE_')
+    utils.plot_learningCurve(training_history,plotCurveEpoch,evaluation_dir,'Graph_Unfrozen_FE_')
 
     with open(evaluation_dir +'Result_Report.csv','w') as f:
         w = csv.writer(f)
