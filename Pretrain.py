@@ -74,7 +74,7 @@ SSL_epochs = 200
 
 masking_ratio = 75e-2
 
-instance_number = 99
+instance_number = 0
 
 randomRuns = 5
 
