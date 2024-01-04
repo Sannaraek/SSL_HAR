@@ -181,16 +181,16 @@ if not is_interactive():
 # In[11]:
 
 
-# Sleep needed when launching jobs in parallel
-time.sleep((instance_number % 30) * 20 ) 
-# remove this before public release
-datasetIndex = (instance_number // (len(datasets) - 1)) % 6
-architectureIndex = instance_number // 30
-instance_number = instance_number%5
-testingDataset = datasets[datasetIndex]
-architecture = architectures[architectureIndex]
-print("instance_number: " +str(instance_number))
-print("testingDataset: " +str(datasets[datasetIndex]) + " architecture: " +str(architectures[architectureIndex]))
+# # Sleep needed when launching jobs in parallel
+# time.sleep((instance_number % 30) * 20 ) 
+# # remove this before public release
+# datasetIndex = (instance_number // (len(datasets) - 1)) % 6
+# architectureIndex = instance_number // 30
+# instance_number = instance_number%5
+# testingDataset = datasets[datasetIndex]
+# architecture = architectures[architectureIndex]
+# print("instance_number: " +str(instance_number))
+# print("testingDataset: " +str(datasets[datasetIndex]) + " architecture: " +str(architectures[architectureIndex]))
 
 
 # In[12]:
@@ -206,7 +206,7 @@ if(finetune_epoch < 10):
     
 dataSetting = testingDataset
 
-project_directory = rootdir+'results/'+projectName+'/'+str(instance_number)+'/'
+project_directory = rootdir+'results/'+projectName+'/'
 working_directory = project_directory+dataSetting+'/'
 pretrained_dir = working_directory + evaluationType + '/'
     
