@@ -53,7 +53,7 @@ method = 'MAE'
 
 architecture = 'HART'
 
-finetune_epoch = 100
+finetune_epoch = 1
 
 finetune_batch_size = 64
 
@@ -88,7 +88,7 @@ datasets = ['HHAR','MobiAct','MotionSense','RealWorld_Waist','UCI','PAMAP']
 # In[5]:
 
 
-datasets = ['MobiAct','MotionSense','UCI','PAMAP']
+datasets = ['MobiAct','MotionSense','UCI','PAMAP','SHL']
 
 
 # In[6]:
@@ -215,17 +215,23 @@ val_checkpoint_pipeline_weights = working_directory+"best_val_"+str(method)+"_pr
 trained_pipeline_weights = working_directory+"trained_"+str(method)+"_pretrain.h5"
 random_FT_weights = working_directory+"ini_"+str(method)+"_HART_Classification_Weights.h5"    
 trained_FT_weights = working_directory+"trained_"+str(method)+"_dowmstream.h5"
-
+trained_FE_dir = working_directory+"trained_"+str(method)+"_feature_extractor.h5"
 os.makedirs(pretrained_dir, exist_ok=True)
 
 
 # In[13]:
 
 
-datasetList = ["HHAR","MobiAct","MotionSense","RealWorld_Waist","UCI","PAMAP"] 
+# datasetList = ["HHAR","MobiAct","MotionSense","RealWorld_Waist","UCI","PAMAP"] 
 
 
 # In[14]:
+
+
+datasetList = ["SHL","MobiAct","MotionSense","UCI","PAMAP"] 
+
+
+# In[15]:
 
 
 SSLdatasetList = copy.deepcopy(datasetList)
@@ -241,9 +247,7 @@ for datasetName in SSLdatasetList:
     SSL_val_data.append(hkl.load(dataDir + 'valData/'+str(datasetName)+'_data.hkl'))
 
 SSL_data = np.vstack((np.hstack((SSL_data))))
-
 SSL_val_data = np.vstack((np.hstack((SSL_val_data))))
-
 testData = hkl.load(dataDir + 'testData/'+testingDataset+'_data.hkl')
 testLabel = hkl.load(dataDir + 'testData/'+testingDataset+'_label.hkl')
 
@@ -252,23 +256,20 @@ testData = np.vstack((testData))
 testLabel = np.vstack((testLabel))
 
 
-# In[15]:
+# In[16]:
 
 
 # Here we are getting the labels presented only in the target dataset and calculating the suitable output shape.
 ALL_ACTIVITY_LABEL = np.asarray(['Downstairs', 'Upstairs','Running','Sitting','Standing','Walking','Lying','Cycling','Nordic_Walking','Jumping'])
-uniqueClassIDs = np.unique(np.argmax(testLabel,axis = -1))
-ACTIVITY_LABEL = ALL_ACTIVITY_LABEL[uniqueClassIDs]
-output_shape = len(ACTIVITY_LABEL)
 
 
-# In[16]:
+# In[17]:
 
 
 pretrain_callbacks = []
 
 
-# In[17]:
+# In[18]:
 
 
 if(method == 'Data2vec'):
@@ -368,7 +369,7 @@ else:
     raise Exception("Unrecognized algorithm, Please select one of the following: SimCLR, Data2vec, MAE")
 
 
-# In[18]:
+# In[19]:
 
 
 optimizer = tf.keras.optimizers.Adam(SSL_LR)
@@ -386,17 +387,17 @@ else:
     print("Initialized model weights loaded")
 
 
-# In[19]:
+# In[20]:
 
 
 pretrained_FE = pretrain_pipeline.return_feature_extrator()
-classification_model = utils.create_classification_model_from_base_model(pretrained_FE,output_shape,model_name = "pretrain_pipeline_classifier")
+# classification_model = utils.create_classification_model_from_base_model(pretrained_FE,output_shape,model_name = "pretrain_pipeline_classifier")
 FE_Layers = len(pretrained_FE.layers) + 1
 if(not os.path.exists(random_FT_weights)):
     classification_model.save_weights(random_FT_weights)
 
 
-# In[20]:
+# In[22]:
 
 
 if(not os.path.exists(trained_pipeline_weights)):
@@ -426,7 +427,7 @@ if(not os.path.exists(trained_pipeline_weights)):
 
     pretrain_pipeline.load_weights(val_checkpoint_pipeline_weights)
     pretrain_pipeline.save_weights(trained_pipeline_weights)
-    classification_model.save_weights(trained_FT_weights)
+    pretrained_FE.save_weights(trained_FE_dir)
     perplexity = 30.0
     embeddings = pretrain_pipeline.predict(testData, batch_size=1024,verbose=0)
     tsne_model = sklearn.manifold.TSNE(perplexity=perplexity, verbose=0, random_state=42)
@@ -438,7 +439,6 @@ if(not os.path.exists(trained_pipeline_weights)):
     hkl.dump(tsne_projections,pretrained_dir+'tsne_projections.hkl')
 else:
     pretrain_pipeline.load_weights(trained_pipeline_weights)
-    classification_model.load_weights(trained_FT_weights)
     print("Pre-trained model found, skipping training of pretrained model",flush = True)
 
 
