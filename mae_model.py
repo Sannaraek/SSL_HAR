@@ -242,42 +242,6 @@ class MaskEncoder(layers.Layer):
         unmask_indices = rand_indices[:, self.num_mask :]
         return mask_indices, unmask_indices
 
-    
-
-def HART_student_encoder(projection_dim = 192,num_heads = 3,filterAttentionHead = 4, convKernels = [3, 7, 15, 31, 31, 31],dropout_rate = 0.1):
-    projectionHalf = projection_dim//2
-    projectionQuarter = projection_dim//4
-    dropPathRate = np.linspace(0, dropout_rate* 10, len(convKernels)) * 0.1
-    transformer_units = [
-    projection_dim * 2,
-    projection_dim,]  
-    inputs = layers.Input((None, projection_dim))
-    encoded_patches = inputs
-    for layerIndex, kernelLength in enumerate(convKernels):        
-        x1 = layers.LayerNormalization(epsilon=1e-6 , name = "normalizedInputs_"+str(layerIndex))(encoded_patches)
-        branch1 = liteFormer(startIndex = projectionQuarter,
-                          stopIndex = projectionQuarter + projectionHalf,
-                          projectionSize = projectionHalf,
-                          attentionHead =  filterAttentionHead, 
-                          kernelSize = kernelLength,
-                          dropPathRate = dropPathRate[layerIndex],
-                          dropout_rate = dropout_rate,
-                          name = "liteFormer_"+str(layerIndex))(x1)
-        
-        branch2Acc = SensorWiseMHA(projectionQuarter,num_heads,0,projectionQuarter,dropPathRate = dropPathRate[layerIndex],dropout_rate = dropout_rate,name = "AccMHA_"+str(layerIndex))(x1)
-        branch2Gyro = SensorWiseMHA(projectionQuarter,num_heads,projectionQuarter + projectionHalf ,projection_dim,dropPathRate = dropPathRate[layerIndex],dropout_rate = dropout_rate, name = "GyroMHA_"+str(layerIndex))(x1)
-        concatAttention = tf.concat((branch2Acc,branch1,branch2Gyro),axis= 2 )
-        x2 = layers.Add()([concatAttention, encoded_patches])
-        x3 = layers.LayerNormalization(epsilon=1e-6)(x2)
-        x3 = mlp2(x3, hidden_units=transformer_units, dropout_rate=dropout_rate)
-        x3 = DropPath(dropPathRate[layerIndex])(x3)
-        encoded_patches = layers.Add()([x3, x2])
-#     outouts = encoded_patches
-    outouts = layers.LayerNormalization(epsilon=1e-6)(encoded_patches)
-    return tf.keras.Model(inputs, outouts, name="studentModel")
-
-    
-
 def ispl_inception_encoder(projection_dim,
                    filters_number = 64,
                    network_depth = 5,
