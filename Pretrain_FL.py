@@ -391,10 +391,7 @@ else:
 
 
 pretrained_FE = pretrain_pipeline.return_feature_extrator()
-# classification_model = utils.create_classification_model_from_base_model(pretrained_FE,output_shape,model_name = "pretrain_pipeline_classifier")
 FE_Layers = len(pretrained_FE.layers) + 1
-if(not os.path.exists(random_FT_weights)):
-    classification_model.save_weights(random_FT_weights)
 
 
 # In[22]:
