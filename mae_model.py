@@ -701,9 +701,8 @@ class MaskedAutoencoder(tf.keras.Model):
         embeddings_output = self.downstreamPooler(encoder_outputs)
         return embeddings_output
     
-    def calculate_loss(self, inputData):
+    def calculate_loss(self, inputData, training = False):
         patches = self.patch_layer(inputData)
-
         (
             unmasked_embeddings,
             masked_embeddings,
@@ -713,7 +712,7 @@ class MaskedAutoencoder(tf.keras.Model):
         ) = self.patch_encoder(patches, downstreaming = False)
 
         # Pass the unmaksed patche to the encoder.
-        encoder_outputs = self.encoder(unmasked_embeddings)
+        encoder_outputs = self.encoder(unmasked_embeddings, training = training)
 
         # Create the decoder inputs.
         encoder_outputs = encoder_outputs + unmasked_positions
@@ -735,7 +734,7 @@ class MaskedAutoencoder(tf.keras.Model):
     def train_step(self, inputData):
 #         print(inputData.shape[0])
         with tf.GradientTape() as tape:
-            total_loss, loss_patch, loss_output = self.calculate_loss(inputData)
+            total_loss, loss_patch, loss_output = self.calculate_loss(inputData,training = True)
 
         # Apply gradients.
         train_vars = [
@@ -755,7 +754,7 @@ class MaskedAutoencoder(tf.keras.Model):
         self.compiled_metrics.update_state(loss_patch, loss_output)
         return {m.name: m.result() for m in self.metrics}
     def test_step(self, images):
-        total_loss, loss_patch, loss_output = self.calculate_loss(images[0])
+        total_loss, loss_patch, loss_output = self.calculate_loss(images[0], training = False)
 
         # Update the trackers.
         self.compiled_metrics.update_state(loss_patch, loss_output)
