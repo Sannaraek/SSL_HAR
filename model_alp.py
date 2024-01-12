@@ -660,7 +660,7 @@ class GatedLinearUnit(layers.Layer):
         return config
 
 
-def HART_ALP_encoder(projection_dim = 192,num_heads = 3,filterAttentionHead = 4, convKernels = [3, 7, 15, 31, 31, 31],dropout_rate = 0.1,useTokens = False):
+def HART_ALP_encoder(projection_dim = 192,num_heads = 3,filterAttentionHead = 4, convKernels = [3, 7, 15, 31, 31, 31],dropout_rate = 0.1,memoryBankSize = 1024,useTokens = False):
     projectionHalf = projection_dim//2
     projectionQuarter = projection_dim//4
     dropPathRate = np.linspace(0, dropout_rate* 10, len(convKernels)) * 0.1
@@ -674,7 +674,7 @@ def HART_ALP_encoder(projection_dim = 192,num_heads = 3,filterAttentionHead = 4,
         x1 = layers.LayerNormalization(epsilon=1e-6 , name = "normalizedInputs_"+str(layerIndex))(encoded_patches)
         x2 = MemNodeV4_GLU(layer = layerIndex, 
                projection_dim = projection_dim,
-               memoryBankSize = 1024, 
+               memoryBankSize = memoryBankSize, 
                memorySlot = 3, 
                decay = 0.96)(x1) 
         branch1 = liteFormer(startIndex = projectionQuarter,
