@@ -49,7 +49,7 @@ testingDataset = 'HHAR'
 evaluationType = 'group'
 # 'subject','group'
 
-method = 'MAE_ALP'
+method = 'MAE_ALP_2048'
 # Data2vec, MAE, SimCLR
 
 architecture = 'HART'
@@ -268,6 +268,7 @@ patch_encoder = mae_model.SensorWisePatchEncoder(frame_length,enc_embedding_size
 mae_encoder = model_alp.HART_ALP_encoder(enc_embedding_size,                                                     
                                      num_heads = 3,
                                      filterAttentionHead = 4, 
+                                     memoryBankSize = 2048,
                                      convKernels = convKernels)
 mae_decoder = mae_model.HART_decoder(enc_embedding_size = enc_embedding_size,
                                      projection_dim = 256,
