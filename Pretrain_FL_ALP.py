@@ -49,7 +49,7 @@ testingDataset = 'HHAR'
 evaluationType = 'group'
 # 'subject','group'
 
-method = 'MAE_ALP_1024'
+method = 'MAE_ALP'
 # Data2vec, MAE, SimCLR
 
 architecture = 'HART'
@@ -187,8 +187,7 @@ if not is_interactive():
 
 
 dataDir = rootdir+'Datasets/SSL_PipelineUnionV2/'+experimentSetting+'/'
-# projectName = str(architecture)+'_Data2Vec_LayerNorm_mask_'+str(masking_ratio)+'_frameLength_'+str(frame_length)+'_SSL_epochs_'+str(SSL_epochs)
-projectName = str(method) +"_"+str (architecture) + "_SSL_Epochs" + str(SSL_epochs) +'_FL_MODEL'
+projectName = str(method) +"_"+str (architecture) + "_SSL_batch_size_" + str(SSL_batch_size) +'_memoryCount_'+str(memoryCount)
 testMode = False
 if(finetune_epoch < 10):
     testMode = True
