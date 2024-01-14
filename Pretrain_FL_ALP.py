@@ -81,6 +81,8 @@ randomRuns = 5
 
 warmUpEpoch = 50
 
+memoryCount = 1024
+
 
 # In[ ]:
 
@@ -133,7 +135,7 @@ def add_fit_args(parser):
         help='Specify the architecture of the model to train with') 
     parser.add_argument('--method', type=str, default=method, 
         help='Specify the SSL method') 
-    parser.add_argument('--instance_number', type=int, default=instance_number, 
+    parser.add_argument('--memoryCount', type=int, default=memoryCount, 
         help='Specify the SSL method') 
     args = parser.parse_args()
     return args
@@ -178,7 +180,7 @@ if not is_interactive():
     masking_ratio = args.masking_ratio
     architecture = args.architecture
     method = args.method
-    instance_number = args.instance_number
+    memoryCount = args.memoryCount
 
 
 # In[ ]:
@@ -222,7 +224,7 @@ datasetList = ["SHL","MobiAct","MotionSense","UCI","PAMAP"]
 # In[ ]:
 
 
-datasetList = ["UCI"] 
+# datasetList = ["UCI"] 
 
 
 # In[ ]:
