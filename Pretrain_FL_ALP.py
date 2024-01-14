@@ -58,7 +58,7 @@ finetune_epoch = 1
 
 finetune_batch_size = 64
 
-SSL_batch_size = 256
+SSL_batch_size = 128
 
 loss = 'Adam'
 # 'LARS', 'Adam', 'SGD'
