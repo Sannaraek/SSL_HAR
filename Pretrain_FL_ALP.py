@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[ ]:
 
 
 import os
@@ -27,7 +27,7 @@ tf.random.set_seed(seed)
 np.random.seed(seed)
 
 
-# In[2]:
+# In[ ]:
 
 
 # Library scripts
@@ -39,7 +39,7 @@ import simclr_model
 import model_alp
 
 
-# In[3]:
+# In[ ]:
 
 
 experimentSetting = 'LODO'
@@ -49,7 +49,7 @@ testingDataset = 'HHAR'
 evaluationType = 'group'
 # 'subject','group'
 
-method = 'MAE_ALP_2048'
+method = 'MAE_ALP_2048_B256'
 # Data2vec, MAE, SimCLR
 
 architecture = 'HART'
@@ -58,7 +58,7 @@ finetune_epoch = 1
 
 finetune_batch_size = 64
 
-SSL_batch_size = 128
+SSL_batch_size = 256
 
 loss = 'Adam'
 # 'LARS', 'Adam', 'SGD'
@@ -82,25 +82,25 @@ randomRuns = 5
 warmUpEpoch = 50
 
 
-# In[4]:
+# In[ ]:
 
 
 datasets = ['HHAR','MobiAct','MotionSense','RealWorld_Waist','UCI','PAMAP']
 
 
-# In[5]:
+# In[ ]:
 
 
 datasets = ['MobiAct','MotionSense','UCI','PAMAP','SHL']
 
 
-# In[6]:
+# In[ ]:
 
 
 architectures = ['HART','ISPL']
 
 
-# In[7]:
+# In[ ]:
 
 
 def add_fit_args(parser):
@@ -141,7 +141,7 @@ def is_interactive():
     return not hasattr(main, '__file__')
 
 
-# In[8]:
+# In[ ]:
 
 
 tf.keras.backend.set_floatx('float32')
@@ -150,7 +150,7 @@ for gpu in gpus:
     tf.config.experimental.set_memory_growth(gpu, True)
 
 
-# In[9]:
+# In[ ]:
 
 
 if(input_shape[0] % frame_length != 0 ):
@@ -160,7 +160,7 @@ else:
 print("Number of segments : "+str(patch_count))
 
 
-# In[10]:
+# In[ ]:
 
 
 rootdir = './'
@@ -181,7 +181,7 @@ if not is_interactive():
     instance_number = args.instance_number
 
 
-# In[11]:
+# In[ ]:
 
 
 dataDir = rootdir+'Datasets/SSL_PipelineUnionV2/'+experimentSetting+'/'
@@ -207,25 +207,25 @@ trained_FE_dir = working_directory+"trained_"+str(method)+"_feature_extractor.h5
 os.makedirs(pretrained_dir, exist_ok=True)
 
 
-# In[12]:
+# In[ ]:
 
 
 # datasetList = ["HHAR","MobiAct","MotionSense","RealWorld_Waist","UCI","PAMAP"] 
 
 
-# In[13]:
+# In[ ]:
 
 
 datasetList = ["SHL","MobiAct","MotionSense","UCI","PAMAP"] 
 
 
-# In[14]:
+# In[ ]:
 
 
 datasetList = ["UCI"] 
 
 
-# In[15]:
+# In[ ]:
 
 
 SSLdatasetList = copy.deepcopy(datasetList)
@@ -250,20 +250,20 @@ testData = np.vstack((testData))
 testLabel = np.vstack((testLabel))
 
 
-# In[16]:
+# In[ ]:
 
 
 # Here we are getting the labels presented only in the target dataset and calculating the suitable output shape.
 ALL_ACTIVITY_LABEL = np.asarray(['Downstairs', 'Upstairs','Running','Sitting','Standing','Walking','Lying','Cycling','Nordic_Walking','Jumping'])
 
 
-# In[17]:
+# In[ ]:
 
 
 pretrain_callbacks = []
 
 
-# In[18]:
+# In[ ]:
 
 
 enc_embedding_size = 192
@@ -289,7 +289,7 @@ pretrain_pipeline = mae_model.MaskedAutoencoder(patch_layer,
 SSL_loss = tf.keras.losses.MeanSquaredError()
 
 
-# In[19]:
+# In[ ]:
 
 
 def getLayerIndexByName(model, layername):
@@ -303,13 +303,13 @@ def getLayerIndexByName(model, layername):
             # return idx
 
 
-# In[20]:
+# In[ ]:
 
 
 layersID = getLayerIndexByName(mae_encoder,"mem_node")
 
 
-# In[21]:
+# In[ ]:
 
 
 optimizer = tf.keras.optimizers.Adam(SSL_LR)
@@ -327,14 +327,14 @@ else:
     print("Initialized model weights loaded")
 
 
-# In[22]:
+# In[ ]:
 
 
 pretrained_FE = pretrain_pipeline.return_feature_extrator()
 FE_Layers = len(pretrained_FE.layers) + 1
 
 
-# In[23]:
+# In[ ]:
 
 
 historyWarmUp = pretrain_pipeline.fit(SSL_data,
@@ -344,7 +344,7 @@ historyWarmUp = pretrain_pipeline.fit(SSL_data,
                                     verbose=2)
 
 
-# In[24]:
+# In[ ]:
 
 
 class trackMemoryStability(tf.keras.callbacks.Callback):
@@ -367,7 +367,7 @@ class trackMemoryStability(tf.keras.callbacks.Callback):
 memoryChangeTrack = trackMemoryStability(layersID)
 
 
-# In[25]:
+# In[ ]:
 
 
 for index,layerID in enumerate(layersID):
@@ -375,7 +375,7 @@ for index,layerID in enumerate(layersID):
 pretrain_pipeline.compile(optimizer=optimizer, loss=SSL_loss, metrics=[])
 
 
-# In[26]:
+# In[ ]:
 
 
 best_val_model_callback = tf.keras.callbacks.ModelCheckpoint(val_checkpoint_pipeline_weights,
@@ -392,7 +392,7 @@ historyAdapt = pretrain_pipeline.fit(SSL_data,
                                 verbose=2)
 
 
-# In[27]:
+# In[ ]:
 
 
 if(stop_early.stopped_epoch == 0):
@@ -401,7 +401,7 @@ else:
     earlyStopEpoch = stop_early.stopped_epoch + 1
 
 
-# In[28]:
+# In[ ]:
 
 
 memoryStabilityPath = pretrained_dir+"memoryImages/"
@@ -431,7 +431,7 @@ plt.show()
 plt.clf()
 
 
-# In[29]:
+# In[ ]:
 
 
 history = {}
@@ -447,7 +447,7 @@ if 'val_loss' in historyWarmUp.history and 'val_loss' in historyAdapt.history:
 
 
 
-# In[30]:
+# In[ ]:
 
 
 plt.figure(figsize=(12,8))
@@ -462,7 +462,7 @@ plt.savefig(working_directory+"lossCurve.png", bbox_inches="tight")
 plt.show()
 
 
-# In[31]:
+# In[ ]:
 
 
 pretrain_pipeline.load_weights(val_checkpoint_pipeline_weights)
