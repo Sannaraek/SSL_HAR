@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 
 import os
@@ -27,7 +27,7 @@ tf.random.set_seed(seed)
 np.random.seed(seed)
 
 
-# In[ ]:
+# In[2]:
 
 
 # Library scripts
@@ -39,7 +39,7 @@ import simclr_model
 import model_alp
 
 
-# In[ ]:
+# In[3]:
 
 
 experimentSetting = 'LODO'
@@ -71,7 +71,7 @@ input_shape = (128,6)
 
 frame_length = 16
 
-SSL_epochs = 350
+SSL_epochs = 300
 
 masking_ratio = 75e-2
 
@@ -82,25 +82,25 @@ randomRuns = 5
 warmUpEpoch = 50
 
 
-# In[ ]:
+# In[4]:
 
 
 datasets = ['HHAR','MobiAct','MotionSense','RealWorld_Waist','UCI','PAMAP']
 
 
-# In[ ]:
+# In[5]:
 
 
 datasets = ['MobiAct','MotionSense','UCI','PAMAP','SHL']
 
 
-# In[ ]:
+# In[6]:
 
 
 architectures = ['HART','ISPL']
 
 
-# In[ ]:
+# In[7]:
 
 
 def add_fit_args(parser):
@@ -141,7 +141,7 @@ def is_interactive():
     return not hasattr(main, '__file__')
 
 
-# In[ ]:
+# In[8]:
 
 
 tf.keras.backend.set_floatx('float32')
@@ -150,7 +150,7 @@ for gpu in gpus:
     tf.config.experimental.set_memory_growth(gpu, True)
 
 
-# In[ ]:
+# In[9]:
 
 
 if(input_shape[0] % frame_length != 0 ):
@@ -160,7 +160,7 @@ else:
 print("Number of segments : "+str(patch_count))
 
 
-# In[ ]:
+# In[10]:
 
 
 rootdir = './'
@@ -181,7 +181,7 @@ if not is_interactive():
     instance_number = args.instance_number
 
 
-# In[ ]:
+# In[11]:
 
 
 dataDir = rootdir+'Datasets/SSL_PipelineUnionV2/'+experimentSetting+'/'
@@ -207,19 +207,25 @@ trained_FE_dir = working_directory+"trained_"+str(method)+"_feature_extractor.h5
 os.makedirs(pretrained_dir, exist_ok=True)
 
 
-# In[ ]:
+# In[12]:
 
 
 # datasetList = ["HHAR","MobiAct","MotionSense","RealWorld_Waist","UCI","PAMAP"] 
 
 
-# In[ ]:
+# In[13]:
 
 
 datasetList = ["SHL","MobiAct","MotionSense","UCI","PAMAP"] 
 
 
-# In[ ]:
+# In[14]:
+
+
+datasetList = ["UCI"] 
+
+
+# In[15]:
 
 
 SSLdatasetList = copy.deepcopy(datasetList)
@@ -244,20 +250,20 @@ testData = np.vstack((testData))
 testLabel = np.vstack((testLabel))
 
 
-# In[ ]:
+# In[16]:
 
 
 # Here we are getting the labels presented only in the target dataset and calculating the suitable output shape.
 ALL_ACTIVITY_LABEL = np.asarray(['Downstairs', 'Upstairs','Running','Sitting','Standing','Walking','Lying','Cycling','Nordic_Walking','Jumping'])
 
 
-# In[ ]:
+# In[17]:
 
 
 pretrain_callbacks = []
 
 
-# In[ ]:
+# In[18]:
 
 
 enc_embedding_size = 192
@@ -283,7 +289,7 @@ pretrain_pipeline = mae_model.MaskedAutoencoder(patch_layer,
 SSL_loss = tf.keras.losses.MeanSquaredError()
 
 
-# In[ ]:
+# In[19]:
 
 
 def getLayerIndexByName(model, layername):
@@ -297,13 +303,13 @@ def getLayerIndexByName(model, layername):
             # return idx
 
 
-# In[ ]:
+# In[20]:
 
 
 layersID = getLayerIndexByName(mae_encoder,"mem_node")
 
 
-# In[ ]:
+# In[21]:
 
 
 optimizer = tf.keras.optimizers.Adam(SSL_LR)
@@ -321,14 +327,14 @@ else:
     print("Initialized model weights loaded")
 
 
-# In[ ]:
+# In[22]:
 
 
 pretrained_FE = pretrain_pipeline.return_feature_extrator()
 FE_Layers = len(pretrained_FE.layers) + 1
 
 
-# In[ ]:
+# In[23]:
 
 
 historyWarmUp = pretrain_pipeline.fit(SSL_data,
@@ -338,7 +344,7 @@ historyWarmUp = pretrain_pipeline.fit(SSL_data,
                                     verbose=2)
 
 
-# In[ ]:
+# In[24]:
 
 
 class trackMemoryStability(tf.keras.callbacks.Callback):
@@ -361,7 +367,7 @@ class trackMemoryStability(tf.keras.callbacks.Callback):
 memoryChangeTrack = trackMemoryStability(layersID)
 
 
-# In[ ]:
+# In[25]:
 
 
 for index,layerID in enumerate(layersID):
@@ -369,7 +375,7 @@ for index,layerID in enumerate(layersID):
 pretrain_pipeline.compile(optimizer=optimizer, loss=SSL_loss, metrics=[])
 
 
-# In[ ]:
+# In[26]:
 
 
 best_val_model_callback = tf.keras.callbacks.ModelCheckpoint(val_checkpoint_pipeline_weights,
@@ -386,7 +392,16 @@ historyAdapt = pretrain_pipeline.fit(SSL_data,
                                 verbose=2)
 
 
-# In[ ]:
+# In[27]:
+
+
+if(stop_early.stopped_epoch == 0):
+    earlyStopEpoch = SSL_epochs 
+else:
+    earlyStopEpoch = stop_early.stopped_epoch + 1
+
+
+# In[28]:
 
 
 memoryStabilityPath = pretrained_dir+"memoryImages/"
@@ -394,7 +409,7 @@ os.makedirs(memoryStabilityPath, exist_ok=True)
 memoryStabilityEpoch = [memoryChangeTrack.memoryStabilityEpoch[key] for key in memoryChangeTrack.memoryStabilityEpoch]
 for index, layerMemoryStability in enumerate(memoryStabilityEpoch):
     memoryStabilityEpoch = [memoryChangeTrack.memoryStabilityEpoch[key] for key in memoryChangeTrack.memoryStabilityEpoch]
-    epoch_range = range(1, SSL_epochs)
+    epoch_range = range(1, earlyStopEpoch)
     plt.plot(epoch_range, layerMemoryStability)
     plt.title('Prototype Displacements For Block '+str(index))
     plt.ylabel('L1 Distance')
@@ -404,7 +419,7 @@ for index, layerMemoryStability in enumerate(memoryStabilityEpoch):
     plt.clf()
 
 # memoryStabilityEpoch = [memoryChangeTrack.memoryStabilityEpoch[key] for key in memoryChangeTrack.memoryStabilityEpoch]
-epoch_range = range(1, SSL_epochs)
+epoch_range = range(1, earlyStopEpoch)
 meanMemory = np.mean(memoryStabilityEpoch,axis = 0)
 stdMemory = np.std(memoryStabilityEpoch,axis = 0)
 plt.errorbar(epoch_range, meanMemory, yerr=stdMemory)
@@ -416,7 +431,7 @@ plt.show()
 plt.clf()
 
 
-# In[ ]:
+# In[29]:
 
 
 history = {}
@@ -432,7 +447,7 @@ if 'val_loss' in historyWarmUp.history and 'val_loss' in historyAdapt.history:
 
 
 
-# In[ ]:
+# In[30]:
 
 
 plt.figure(figsize=(12,8))
@@ -447,7 +462,7 @@ plt.savefig(working_directory+"lossCurve.png", bbox_inches="tight")
 plt.show()
 
 
-# In[ ]:
+# In[31]:
 
 
 pretrain_pipeline.load_weights(val_checkpoint_pipeline_weights)
@@ -462,6 +477,12 @@ unique_labels = np.unique(labels_argmax)
 utils.projectTSNE('TSNE_Embeds',pretrained_dir,ALL_ACTIVITY_LABEL,labels_argmax,tsne_projections,unique_labels )
 utils.projectTSNEWithShape('TSNE_Embeds_shape',pretrained_dir,ALL_ACTIVITY_LABEL,labels_argmax,tsne_projections,unique_labels )
 hkl.dump(tsne_projections,pretrained_dir+'tsne_projections.hkl')
+
+
+# In[ ]:
+
+
+
 
 
 # In[ ]:
