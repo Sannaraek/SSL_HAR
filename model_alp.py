@@ -565,13 +565,18 @@ def hartModel(useTokens = True):
 
 
 class MemNodeV4_GLU(layers.Layer):
-    def __init__(self ,layer,projection_dim, memoryBankSize = 128, memorySlot = 3, decay = 0.96,**kwargs):
+    def __init__(self ,layer,projection_dim, globalPrototype = False, memoryBankSize = 128, memorySlot = 3, decay = 0.96,**kwargs):
         super(MemNodeV4_GLU, self).__init__(**kwargs)  
         self.memorySlot = memorySlot
         self.decay = decay
         self.memoryPlaceHolder = tf.Variable(tf.random.normal((memoryBankSize,projection_dim)), 
                                              name = "mem_weights_"+str(layer),
                                              trainable= False)
+
+        if(globalPrototype):
+            self.globalProts = tf.Variable(tf.random.normal((memoryBankSize,projection_dim)), 
+                                         name = "global_weights_"+str(layer),
+                                         trainable= False)
         self.coldStart = False
         self.projection_dim = projection_dim
         # self.GLU = GatedLinearUnit(projection_dim)
@@ -660,7 +665,7 @@ class GatedLinearUnit(layers.Layer):
         return config
 
 
-def HART_ALP_encoder(projection_dim = 192,num_heads = 3,filterAttentionHead = 4, convKernels = [3, 7, 15, 31, 31, 31],dropout_rate = 0.1,memoryBankSize = 1024,useTokens = False):
+def HART_ALP_encoder(projection_dim = 192,globalPrototype = False,num_heads = 3,filterAttentionHead = 4, convKernels = [3, 7, 15, 31, 31, 31],dropout_rate = 0.1,memoryBankSize = 1024,useTokens = False):
     projectionHalf = projection_dim//2
     projectionQuarter = projection_dim//4
     dropPathRate = np.linspace(0, dropout_rate* 10, len(convKernels)) * 0.1
@@ -673,6 +678,7 @@ def HART_ALP_encoder(projection_dim = 192,num_heads = 3,filterAttentionHead = 4,
     for layerIndex, kernelLength in enumerate(convKernels):        
         x1 = layers.LayerNormalization(epsilon=1e-6 , name = "normalizedInputs_"+str(layerIndex))(encoded_patches)
         x2 = MemNodeV4_GLU(layer = layerIndex, 
+               globalPrototype = globalPrototype,
                projection_dim = projection_dim,
                memoryBankSize = memoryBankSize, 
                memorySlot = 3, 

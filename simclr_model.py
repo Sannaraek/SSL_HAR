@@ -212,33 +212,33 @@ class PositionalEncoder(layers.Layer):
         patch_embeddings = (patches + pos_embeddings)  # (B, num_patches, projection_dim)
         return patch_embeddings
     
-class MaskEncoder(layers.Layer):
-    def __init__(self,embedding_size,mask_proportion, **kwargs):
-        super().__init__(**kwargs)
-        self.mask_proportion = mask_proportion
-        self.mask_token = tf.Variable(
-            tf.random.normal([1,embedding_size]), trainable=True
-        )
-    def build(self, input_shape):
-        (_, self.num_patches, self.patch_area) = input_shape
-        self.num_mask = int(np.ceil(self.mask_proportion * self.num_patches))
-        print("Number of mask")
-        print(self.num_mask)
-    def call(self, patches, training = None):
-        batch_size = tf.shape(patches)[0]
-        mask_indices, unmask_indices = self.get_random_indices(batch_size)
-        mask_tokens = tf.repeat(self.mask_token, repeats=self.num_mask, axis=0)
-        mask_tokens = tf.repeat(mask_tokens[tf.newaxis, ...], repeats=batch_size, axis=0)
-        unmaskedEmbeds = tf.gather(patches, unmask_indices, axis=1, batch_dims=1)  
-        encoderInput = tf.concat((unmaskedEmbeds,mask_tokens),axis = 1)
-        return encoderInput,mask_indices
-    def get_random_indices(self, batch_size):
-        rand_indices = tf.argsort(
-            tf.random.uniform(shape=(batch_size, self.num_patches)), axis=-1
-        )
-        mask_indices = rand_indices[:, : self.num_mask]
-        unmask_indices = rand_indices[:, self.num_mask :]
-        return mask_indices, unmask_indices
+# class MaskEncoder(layers.Layer):
+#     def __init__(self,embedding_size,mask_proportion, **kwargs):
+#         super().__init__(**kwargs)
+#         self.mask_proportion = mask_proportion
+#         self.mask_token = tf.Variable(
+#             tf.random.normal([1,embedding_size]), trainable=True
+#         )
+#     def build(self, input_shape):
+#         (_, self.num_patches, self.patch_area) = input_shape
+#         self.num_mask = int(np.ceil(self.mask_proportion * self.num_patches))
+#         print("Number of mask")
+#         print(self.num_mask)
+#     def call(self, patches, training = None):
+#         batch_size = tf.shape(patches)[0]
+#         mask_indices, unmask_indices = self.get_random_indices(batch_size)
+#         mask_tokens = tf.repeat(self.mask_token, repeats=self.num_mask, axis=0)
+#         mask_tokens = tf.repeat(mask_tokens[tf.newaxis, ...], repeats=batch_size, axis=0)
+#         unmaskedEmbeds = tf.gather(patches, unmask_indices, axis=1, batch_dims=1)  
+#         encoderInput = tf.concat((unmaskedEmbeds,mask_tokens),axis = 1)
+#         return encoderInput,mask_indices
+#     def get_random_indices(self, batch_size):
+#         rand_indices = tf.argsort(
+#             tf.random.uniform(shape=(batch_size, self.num_patches)), axis=-1
+#         )
+#         mask_indices = rand_indices[:, : self.num_mask]
+#         unmask_indices = rand_indices[:, self.num_mask :]
+#         return mask_indices, unmask_indices
 
     
 
@@ -402,10 +402,11 @@ class SimCLR(tf.keras.Model):
         return downStreamModel
     
     def call(self,inputData):
-        transfromedInput1 = self.transformation_function(inputData)
-        transfromedInput2 = self.transformation_function(inputData)
-        total_loss,loss_patch, loss_output = self.calculate_loss(transfromedInput1,transfromedInput2)
-        return total_loss
+        # transfromedInput1 = self.transformation_function(inputData)
+        # transfromedInput2 = self.transformation_function(inputData)
+        # total_loss,loss_patch, loss_output = self.calculate_loss(transfromedInput1,transfromedInput2)
+        output = self.encoder(inputData)
+        return output
 
     def calculate_loss(self, transfromedInput1,transfromedInput2, normalize=True, temperature=1.0, weights=1.0):
         embed1 = self.encoder(transfromedInput1)
@@ -648,8 +649,8 @@ def generate_composite_transform_function_simple(transform_funcs):
         combined_transform_func
             a composite transformation function
     """
-    for i, func in enumerate(transform_funcs):
-        print(i, func)
+    # for i, func in enumerate(transform_funcs):
+    #     print(i, func)
     def combined_transform_func(sample):
         for func in transform_funcs:
             sample = func(sample)
